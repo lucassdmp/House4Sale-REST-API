@@ -1,4 +1,6 @@
 const { query } = require('express');
+const crypto = require('crypto');
+const axios = require('axios');
 
 const Pool = require('pg').Pool
 const pool = new Pool({
@@ -9,17 +11,6 @@ const pool = new Pool({
     port: process.env.PGPORT,
 })
 
-// CREATE TABLE housedata (
-//     houseid SERIAL PRIMARY KEY SERIAL NOT NULL,
-//     housetype VARCHAR(255) NOT NULL,
-//     housebanner VARCHAR(255),
-//     houseaddress VARCHAR(255) NOT NULL,
-//     houseprice DECIMAL(10, 2) NOT NULL,
-//     housedesc TEXT NOT NULL,
-//     isRent boolean NOT NULL,
-//     housedate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-//   );
-
 function prepareQuery(query, params) {
     let queryString = query;
     if (params != null && params != "") {
@@ -27,7 +18,6 @@ function prepareQuery(query, params) {
     }
     return queryString;
 }
-
 
 function addFilterOrderBy(query, filter) {
     if (filter != null && filter != "") {
@@ -41,12 +31,12 @@ function addFilterOrderBy(query, filter) {
 const getHouses = (request, response) => {
     let queryString = "SELECT * FROM housedata";
     const location = request.query.location;
-    
+
     queryString = prepareQuery(queryString, location);
 
     const filter = request.query.filter;
     queryString = addFilterOrderBy(queryString, filter);
-    console.log(queryString);
+
     pool.query(queryString, (error, results) => {
         if (error) {
             return response.status(500).json({ error: error })
@@ -91,7 +81,7 @@ const getHouseById = (request, response) => {
 
 const getHousesByType = (request, response) => {
     const type = request.params.type
-    // console.log(type)
+
     if (type.localeCompare("house") == false && type.localeCompare("apartment") == false) {
         return response.status(500).json({ error: "Invalid house type" })
     }
@@ -182,26 +172,99 @@ const getReviewsOrderedByDate = (request, response) => {
 // POST API
 
 const postHouse = (request, response) => {
-    const { housetype, housebanner, houseaddress, houseprice, housedesc, isRent } = request.body
-    let isRentBool = isRent == "true" ? true : false
-    pool.query(`INSERT INTO housedata (housetype, housebanner, houseaddress, houseprice, housedesc, isRent) VALUES ('${housetype}', '${housebanner}', '${houseaddress}', ${houseprice}, '${housedesc}', ${isRentBool})`, (error, results) => {
+    const { housetype, housebanner, houseaddress, houseprice, housedesc, isrent } = request.body
+
+    pool.query(`INSERT INTO housedata (housetype, housebanner, houseaddress, houseprice, housedesc, isrent) VALUES ('${housetype}', '${housebanner}', '${houseaddress}', ${houseprice}, '${housedesc}', ${isrent})`, (error, results) => {
         if (error) {
             return response.status(500).json({ error: error })
         }
-        response.status(201).send(`House added with ID: ${results.insertId}`)
+        response.status(200).send(`House added successfully!`)
     })
 }
-
-const postReview = (request, response) => {
-    const { houseid, rating, comment, fullname, email } = request.body
-    pool.query(`INSERT INTO review (idreview, houseid, rating, comment, fullname, email) VALUES (${idreview}, ${houseid}, ${rating}, '${comment}', '${fullname}', '${email}')`, (error, results) => {
+const deleteHouse = (request, response) => {
+    const id = parseInt(request.params.id)
+    // console.log("DELITING:" + id);
+    pool.query(`DELETE FROM housedata WHERE houseid = ${id}`, (error, results) => {
         if (error) {
             return response.status(500).json({ error: error })
         }
-        response.status(201).send(`Review added with ID: ${results.insertId}`)
+        response.status(200).send(`House deleted with ID: ${id}`)
     })
 }
 
+const postLogin = (request, response) => {
+    const { username, password, user_ip } = request.body
+    // put password in md5 hash
+    // console.log(username + " " + password + " " + user_ip)
+
+    pool.query(`SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`, (userQueryError, userQueryResults) => {
+        if (userQueryError) {
+            return response.status(500).json({ userQueryError: userQueryError })
+        }
+
+        if (userQueryResults.rows.length == 0) {
+            return response.status(200).json({ userQueryInvalidUserError: "Invalid username or password" })
+        }
+
+        pool.query(`SELECT * FROM user_session WHERE user_id = ${userQueryResults.rows[0].id} AND user_ip = '${user_ip}'`, (sessionQueryError, sessionQueryResults) => {
+            if (sessionQueryError) {
+                return response.status(500).json({ sessionQueryError: sessionQueryError })
+            } else if (sessionQueryResults.rows.length > 0) {
+                response.status(200).json([{ randomKey: sessionQueryResults.rows[0].session_key }])
+            } else {
+                const randomKey = crypto.randomBytes(32).toString('hex');
+                const timestamp = Math.floor(new Date().getTime() / 1000);
+
+                pool.query(`INSERT INTO public.user_session(
+                    session_key, date_of_creation, session_timeout, user_id, user_ip)
+                    VALUES ('${randomKey}', ${timestamp}, 3600, ${userQueryResults.rows[0].id}, '${user_ip}')`, (sessionInsertionError, sessionInsertionResults) => {
+                    if (sessionInsertionError) {
+                        return response.status(500).json({ sessionInsertionError: sessionInsertionError })
+                    }
+                    response.status(200).json([{ randomKey: randomKey }])
+                });
+            }
+        })
+    })
+}
+
+const clearExpiredSessions = () => {
+    const timestamp = Math.floor(new Date().getTime() / 1000);
+    pool.query(`DELETE FROM user_session WHERE date_of_creation + session_timeout < ${timestamp}`, (error, results) => {
+        if (error) {
+            console.log(error)
+        } else {
+            const now = new Date().toISOString();
+            console.log(`Cleared expired sessions - ${now}`)
+        }
+    })
+}
+
+const validateLogin = (request, response) => {
+    const { randomKey, user_ip } = request.body;
+
+    pool.query(`SELECT * FROM user_session WHERE session_key = '${randomKey}' AND user_ip = '${user_ip}'`, (validateLoginError, results) => {
+        if (validateLoginError) {
+            return response.status(500).json({ validateLoginError: validateLoginError })
+        } else if (results.rows.length == 0) {
+            return response.status(200).json({ validateLogin: false })
+        } else {
+            return response.status(200).json({ validateLogin: true })
+        }
+    });
+}
+
+const editHouse = (request, response) => {
+    const { housebanner, houseaddress, houseprice, housedesc, houseid } = request.body
+    const preparedString = `UPDATE housedata SET housebanner = '${housebanner}', houseaddress = '${houseaddress}', houseprice = ${houseprice}, housedesc = '${housedesc}' WHERE houseid = ${houseid}`
+    pool.query(preparedString, (error, results) => {
+        if(error){
+            return response.status(201).send(`Error!`)
+        }else{
+            return response.status(200).send(`House edited successfully!`)
+        }
+    });
+}
 
 module.exports = {
     getHouses,
@@ -216,5 +279,9 @@ module.exports = {
     getReviewsByRating,
     getReviewsOrderedByDate,
     postHouse,
-    postReview
+    postLogin,
+    clearExpiredSessions,
+    validateLogin,
+    deleteHouse,
+    editHouse,
 }
