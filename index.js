@@ -58,15 +58,15 @@ app.get(process.env.API_SUFFIX + `post/review`, (request, response) => {
 })
 // get api for admin login from https://api.myip.com
 app.get(process.env.API_SUFFIX + `admin/login`, (request, response) => {
-  axios.get('https://api.myip.com')
-    .then((res) => {
-      response.json(res.data);
-    })
-    .catch((error) => {
-      response.status(500).json({ error: error });
-    });
+  // axios.get('https://api.myip.com')
+  //   .then((res) => {
+  //     response.json(res.data);
+  //   })
+  //   .catch((error) => {
+  //     response.status(500).json({ error: error });
+  //   });
     let ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress 
-    console.log(ip);
+    response.json({ip: ip});
 })
 
 //REVIEW API 

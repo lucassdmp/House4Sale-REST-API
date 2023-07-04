@@ -241,6 +241,7 @@ const clearExpiredSessions = () => {
 }
 
 const validateLogin = (request, response) => {
+    // console.log("Validating Login..")
     const { randomKey, user_ip } = request.body;
 
     pool.query(`SELECT * FROM user_session WHERE session_key = '${randomKey}' AND user_ip = '${user_ip}'`, (validateLoginError, results) => {
