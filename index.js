@@ -56,25 +56,11 @@ app.get(process.env.API_SUFFIX + `post/house`, (request, response) => {
 app.get(process.env.API_SUFFIX + `post/review`, (request, response) => {
   response.json({ unid: "This SECTION IS FOR REVIEW POST, go to /reviews for a get request" })
 })
-// get api for admin login from https://api.myip.com
+
 app.get(process.env.API_SUFFIX + `admin/login`, (request, response) => {
-  // axios.get('https://api.myip.com')
-  //   .then((res) => {
-  //     response.json(res.data);
-  //   })
-  //   .catch((error) => {
-  //     response.status(500).json({ error: error });
-  //   });
     let ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress 
     response.json({ip: ip});
 })
-
-//REVIEW API 
-app.get(process.env.API_SUFFIX + `reviews`, db.getReviews)
-app.get(process.env.API_SUFFIX + `reviews/house/:houseid`, db.getReviewsByHouseId)
-app.get(process.env.API_SUFFIX + `reviews/rating/:rating`, db.getReviewsByRating)
-app.get(process.env.API_SUFFIX + `reviews/date/:order`, db.getReviewsOrderedByDate)
-
 
 //POST API
 app.post(process.env.API_SUFFIX + `post/house`, db.postHouse)
