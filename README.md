@@ -16,7 +16,7 @@ This is a basic REST API built using the Express framework. The API provides end
 
 2. Install the dependencies: 
 ```bash
-    cd House4SaleDB
+    cd House4Sale-REST-API
     npm install
 ```	
 
