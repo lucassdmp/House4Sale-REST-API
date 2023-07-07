@@ -25,7 +25,7 @@ This is a basic REST API built using the Express framework. The API provides end
 
     Create an `.env` file in the root directory of the project and set the following environment variables or edit the .env.basic:
 
-```bash
+```.env
     PGUSER=<DATABASE_USER>
     PGHOST=<DATABASE_HOST>
     PGDATABASE=<DATABASE_NAME>
