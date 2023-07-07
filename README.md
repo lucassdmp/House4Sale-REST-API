@@ -1,77 +1,75 @@
-# REST API em Express
+# REST API in Express
 
-Esta é uma REST API básica construída usando o framework Express. A API fornece endpoints para realizar operações CRUD em um recurso específico.
+This is a basic REST API built using the Express framework. The API provides endpoints to perform CRUD operations on a specific resource.
 
-## Pré-requisitos
+## Prerequisites
 
-- Node.js instalado
-- Banco de dados PostgreSQL configurado
+- Node.js installed
+- PostgreSQL database configured
 
-## Configuração
+## Configuration
 
-1. Clone o repositório:
+1. Clone the repository:
 ```bash
     git clone https://github.com/lucassdmp/House4SaleDB
 ```
 
-2. Instale as dependências: 
+2. Install the dependencies: 
 ```bash
     cd House4SaleDB
     npm install
 ```	
 
 
-3. Configure as variáveis de ambiente:
+3. Set the environment variables:
 
-    Crie um arquivo `.env` no diretório raiz do projeto e defina as seguintes variáveis de ambiente ou edit o .env.basic:
+    Create an `.env` file in the root directory of the project and set the following environment variables or edit the .env.basic:
 
 ```bash
-    PGUSER=<USUÁRIO_DO_BANCO_DE_DADOS>
-    PGHOST=<HOST_DO_BANCO_DE_DADOS>
-    PGDATABASE=<NOME_DO_BANCO_DE_DADOS>
-    PGPASSWORD=<SENHA_DO_BANCO_DE_DADOS>
-    PGPORT=<PORTA_DO_BANCO_DE_DADOS>
-    API_PORT=<PORTA_DO_SERVIDOR>
-    API_SUFFIX=<SUFIXO_DOS_ENDPOINTS>
+    PGUSER=<DATABASE_USER>
+    PGHOST=<DATABASE_HOST>
+    PGDATABASE=<DATABASE_NAME>
+    PGPASSWORD=<DATABASE_PASSWORD>
+    PGPORT=<DATABASE_PORT>
+    API_PORT=<SERVER_PORT>
+    API_SUFFIX=<ENDPOINTS_SUFFIX>
 ```
 
 
-Certifique-se de substituir os valores entre `< >` pelas suas configurações específicas.
+Be sure to replace the values between `< >` with your specific settings.
 
-## Executando a API
+## Running the API
 
-Após concluir a configuração, você pode executar a API usando o seguinte comando:
+After completing the configuration, you can run the API using the following command:
 
 ```bash
     npm run dev
 ```
 
 
-Isso iniciará o servidor na porta especificada e a API estará pronta para receber solicitações.
+This will start the server on the specified port and the API will be ready to receive requests.
 
 ## Endpoints
 
-A API possui os seguintes endpoints disponíveis:
+The API has the following endpoints available:
 
-- `GET /houses`: Retorna todas as casas.
-- `GET /houses/type/:type`: Retorna todas as casas de um determinado tipo.
-- `GET /houses/address/:address`: Retorna todas as casas com um determinado endereço.
-- `GET /houses/id/:id`: Retorna uma casa pelo ID.
-- `GET /houses/date/:order`: Retorna todas as casas ordenadas por data.
-- `GET /houses/price/:order`: Retorna todas as casas ordenadas por preço.
-- `GET /houses/prices/:price`: Retorna todas as casas com um preço específico.
-- `POST /post/house`: Adiciona uma nova casa.
-- `DELETE /delete/house/:id`: Exclui uma casa pelo ID.
+- `GET /houses`: Returns all houses.
+- `GET /houses/type/:type`: Returns all houses of a given type.
+- `GET /houses/address/:address`: Returns all houses with a given address.
+- `GET /houses/id/:id`: Returns a house by its ID.
+- `GET /houses/date/:order`: Returns all houses sorted by date.
+- `GET /houses/price/:order`: Returns all houses sorted by price.
+- `GET /houses/prices/:price`: Returns all houses with a specific price.
+- `POST /post/house`: Adds a new house.
+- `DELETE /delete/house/:id`: Deletes a house by ID.
 
-Esses são apenas alguns exemplos de endpoints disponíveis. Certifique-se de revisar o código-fonte para obter a lista completa de endpoints e suas respectivas funções.
+These are just some examples of available endpoints. Be sure to review the source code for the complete list of endpoints and their functions.
 
-## Nota
+## Note
 
-Esse projeto foi desenvolvido para fins de estudo, em atividades da faculdade, e por tanto não será mantido.
-
-
-## Licença
-
-Este projeto está licenciado sob a Licença MIT. Consulte o arquivo LICENSE para obter mais detalhes.
+This project was developed for study purposes, in college activities, and therefore will not be maintained.
 
 
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for more details.
